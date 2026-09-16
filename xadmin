@@ -150,6 +150,42 @@
         .date-btn.active { background: rgba(156, 39, 176, 0.3); border-color: #e040fb; box-shadow: 0 0 15px rgba(224, 64, 251, 0.3); }
         .date-btn .day-num { font-size: 24px; font-weight: bold; color: #fff; display: block; }
         .date-btn .day-name { font-size: 12px; color: #b388ff; text-transform: uppercase; }
+        
+        /* Shift Timer Display - Bottom Left Corner */
+        .shift-timer { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 20px; 
+            background: rgba(10, 10, 15, 0.95); 
+            border: 2px solid rgba(255, 235, 59, 0.5); 
+            border-radius: 12px; 
+            padding: 15px 20px; 
+            z-index: 1000; 
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.3); 
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+        .shift-timer .shift-label { 
+            font-size: 12px; 
+            color: #b388ff; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .shift-timer .shift-time { 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #ffeb3b; 
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); 
+            font-variant-numeric: tabular-nums;
+        }
+        .shift-timer .shift-end { 
+            font-size: 11px; 
+            color: #7c4dff; 
+            margin-top: 5px;
+            font-weight: 500;
+        }
     </style>
 </head>
 <body>
@@ -157,6 +193,13 @@
 <!-- Visual Effects -->
 <div class="scanline-overlay" id="scanline"></div>
 <div class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔇</div>
+
+<!-- Shift Timer Display -->
+<div class="shift-timer" id="shiftTimer">
+    <div class="shift-label">До конца смены</div>
+    <div class="shift-time" id="shiftTimeRemaining">--:--:--</div>
+    <div class="shift-end" id="shiftEndTime">Смена: 08:30 - 20:00</div>
+</div>
 
 <div class="container">
     <div id="connStatus" class="connection-status status-offline">Connecting...</div>
@@ -811,7 +854,58 @@
         document.getElementById('displayTime').textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
         const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
         document.getElementById('displayDay').textContent = `${days[now.getDay()]} ${now.getDay()===0||now.getDay()===6?'(Выходной)':'(Будний)'}`;
+        
+        // Update shift timer (day shift 08:30 - 20:00)
+        updateShiftTimer(now);
     }
+    
+    function updateShiftTimer(now) {
+        const shiftStartHour = 8;
+        const shiftStartMin = 30;
+        const shiftEndHour = 20;
+        const shiftEndMin = 0;
+        
+        const shiftStart = new Date(now);
+        shiftStart.setHours(shiftStartHour, shiftStartMin, 0, 0);
+        
+        const shiftEnd = new Date(now);
+        shiftEnd.setHours(shiftEndHour, shiftEndMin, 0, 0);
+        
+        // If current time is before shift start, show time until shift starts
+        // If current time is after shift end, show next day's shift
+        let targetTime;
+        let isBeforeShift = now < shiftStart;
+        let isAfterShift = now >= shiftEnd;
+        
+        if (isBeforeShift) {
+            // Before shift starts - show time until shift start
+            targetTime = shiftStart;
+            document.getElementById('shiftEndTime').textContent = `Смена начнётся в ${String(shiftStartHour).padStart(2,'0')}:${String(shiftStartMin).padStart(2,'0')}`;
+        } else if (isAfterShift) {
+            // After shift ends - show time until tomorrow's shift
+            targetTime = new Date(shiftStart);
+            targetTime.setDate(targetTime.getDate() + 1);
+            document.getElementById('shiftEndTime').textContent = `Смена: ${String(shiftStartHour).padStart(2,'0')}:${String(shiftStartMin).padStart(2,'0')} - ${String(shiftEndHour).padStart(2,'0')}:${String(shiftEndMin).padStart(2,'0')}`;
+        } else {
+            // During shift - show time remaining until shift end
+            targetTime = shiftEnd;
+            document.getElementById('shiftEndTime').textContent = `Смена: ${String(shiftStartHour).padStart(2,'0')}:${String(shiftStartMin).padStart(2,'0')} - ${String(shiftEndHour).padStart(2,'0')}:${String(shiftEndMin).padStart(2,'0')}`;
+        }
+        
+        const diffMs = targetTime - now;
+        const totalSeconds = Math.floor(diffMs / 1000);
+        
+        if (totalSeconds <= 0) {
+            document.getElementById('shiftTimeRemaining').textContent = '00:00:00';
+        } else {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            document.getElementById('shiftTimeRemaining').textContent = 
+                `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+        }
+    }
+    
     setInterval(updateDisplay, 1000); updateDisplay();
 
     window.calculate = function() {
