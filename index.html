@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>X-Arena Manager | Ultimate</title>
+    <style>
+        /* --- CORE STYLES --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0a0f; color: #e0e0e0; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; background-image: radial-gradient(circle at 20% 50%, rgba(156, 39, 176, 0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(123, 31, 162, 0.1) 0%, transparent 50%); position: relative; overflow: hidden; }
+        body::before { content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; opacity: 0.15; background: transparent; }
+        
+        /* Animated Background Stickers */
+        .bg-sticker { position: fixed; pointer-events: none; z-index: 0; opacity: 0.08; filter: hue-rotate(270deg) brightness(0.6); animation: floatSticker linear infinite; }
+        @keyframes floatSticker { 
+            0% { transform: translate(0, 0) rotate(0deg); } 
+            25% { transform: translate(20px, -30px) rotate(90deg); } 
+            50% { transform: translate(-15px, 20px) rotate(180deg); } 
+            75% { transform: translate(25px, 15px) rotate(270deg); } 
+            100% { transform: translate(0, 0) rotate(360deg); } 
+        }
+        .container { max-width: 1000px; width: 100%; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); padding: 40px; border-radius: 20px; box-shadow: 0 0 40px rgba(156, 39, 176, 0.3), 0 0 80px rgba(156, 39, 176, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.1); border: 1px solid rgba(156, 39, 176, 0.3); position: relative; overflow: hidden; }
+        .container::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(45deg, transparent, rgba(156, 39, 176, 0.03), transparent); animation: shimmer 3s infinite; }
+        @keyframes shimmer { 0% { transform: translateX(-100%) translateY(-100%); } 100% { transform: translateX(100%) translateY(100%); } }
+        
+        h2 { text-align: center; color: #e040fb; font-size: 32px; margin-bottom: 10px; text-shadow: 0 0 20px rgba(224, 64, 251, 0.5); position: relative; z-index: 1; }
+        .subtitle { text-align: center; color: #7c4dff; font-size: 14px; margin-bottom: 30px; position: relative; z-index: 1; }
+
+        /* --- TABS & EFFECTS --- */
+        .tabs { display: flex; gap: 10px; margin-bottom: 30px; position: relative; z-index: 1; }
+        .tab { flex: 1; padding: 15px; background: rgba(156, 39, 176, 0.1); border: 2px solid rgba(156, 39, 176, 0.3); border-radius: 10px; color: #b388ff; font-size: 16px; font-weight: bold; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 1px; text-align: center; position: relative; overflow: hidden; }
+        .tab.active { background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); border-color: #e040fb; color: #fff; box-shadow: 0 0 20px rgba(156, 39, 176, 0.4); }
+        .tab:hover:not(.active) { background: rgba(156, 39, 176, 0.2); border-color: rgba(156, 39, 176, 0.5); }
+        .tab.glitch { animation: tabGlitch 0.4s ease-out; }
+        @keyframes tabGlitch { 0% { transform: translate(0); filter: hue-rotate(0deg); } 10% { transform: translate(-3px, 2px); filter: hue-rotate(90deg); } 20% { transform: translate(3px, -2px); filter: hue-rotate(180deg); } 30% { transform: translate(-2px, -1px); filter: hue-rotate(270deg); } 40% { transform: translate(2px, 1px); filter: hue-rotate(360deg); } 50% { transform: translate(-1px, 2px); } 60% { transform: translate(1px, -1px); } 70% { transform: translate(-1px, 0); } 80% { transform: translate(1px, 0); } 100% { transform: translate(0); filter: hue-rotate(0deg); } }
+        
+        .tab-content { display: none; position: relative; z-index: 1; }
+        .tab-content.active { display: block; }
+        
+        .scanline-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 9999; opacity: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(156, 39, 176, 0.1) 2px, rgba(156, 39, 176, 0.1) 4px); }
+        .scanline-overlay.active { animation: scanline 0.5s ease-out; }
+        @keyframes scanline { 0% { opacity: 0; transform: translateY(-100%); } 50% { opacity: 1; } 100% { opacity: 0; transform: translateY(100%); } }
+        
+        .content-glitch { animation: contentGlitch 0.3s ease-out; }
+        @keyframes contentGlitch { 0% { opacity: 0; transform: scale(0.98) skewX(2deg); filter: blur(2px); } 30% { opacity: 0.7; transform: scale(1.01) skewX(-1deg); filter: blur(0); } 60% { opacity: 0.9; transform: scale(1) skewX(0.5deg); } 100% { opacity: 1; transform: scale(1) skewX(0); filter: blur(0); } }
+
+        /* --- UI ELEMENTS --- */
+        .time-display { background: rgba(156, 39, 176, 0.1); padding: 20px; border-radius: 12px; margin-bottom: 25px; border: 1px solid rgba(156, 39, 176, 0.3); text-align: center; }
+        .time-display .time { font-size: 48px; font-weight: bold; color: #e040fb; text-shadow: 0 0 15px rgba(224, 64, 251, 0.6); font-variant-numeric: tabular-nums; }
+        .time-display .day { font-size: 16px; color: #b388ff; margin-top: 8px; }
+        
+        .control-group { margin-bottom: 20px; }
+        label { display: block; color: #b388ff; font-size: 13px; margin-bottom: 8px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+        select, input { width: 100%; padding: 15px; background: rgba(10, 10, 15, 0.6); border: 2px solid rgba(156, 39, 176, 0.3); border-radius: 10px; color: #fff; font-size: 16px; transition: all 0.3s; }
+        select:focus, input:focus { outline: none; border-color: #e040fb; box-shadow: 0 0 15px rgba(224, 64, 251, 0.3); }
+        
+        button { width: 100%; padding: 18px; background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%); color: #fff; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s; text-transform: uppercase; letter-spacing: 2px; box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4); }
+        button:hover { background: linear-gradient(135deg, #ab47bc 0%, #8e24aa 100%); box-shadow: 0 6px 25px rgba(156, 39, 176, 0.6); transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
+        button.secondary { background: rgba(156, 39, 176, 0.2); border: 1px solid #9c27b0; box-shadow: none; font-size: 14px; padding: 10px; margin-top: 10px; }
+        button.secondary:hover { background: rgba(156, 39, 176, 0.4); }
+        button.danger { background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%); box-shadow: 0 4px 15px rgba(244, 67, 54, 0.4); }
+        button.danger:hover { background: linear-gradient(135deg, #ef5350 0%, #e53935 100%); }
+        button.outline { background: transparent; border: 2px solid rgba(156, 39, 176, 0.5); color: #b388ff; box-shadow: none; }
+        button.outline.active-date { background: rgba(156, 39, 176, 0.3); border-color: #e040fb; color: #fff; box-shadow: 0 0 15px rgba(224, 64, 251, 0.3); }
+
+        /* --- PC GRID & BOOKING --- */
+        .zone-selector { margin-bottom: 25px; }
+        .pc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 10px; margin-top: 20px; }
+        .pc-item { background: rgba(10, 10, 15, 0.6); border: 2px solid rgba(156, 39, 176, 0.3); border-radius: 8px; padding: 15px 10px; text-align: center; cursor: pointer; transition: all 0.3s; position: relative; user-select: none; }
+        .pc-item.free { border-color: #00e676; background: rgba(0, 230, 118, 0.1); }
+        .pc-item.free:hover { background: rgba(0, 230, 118, 0.2); box-shadow: 0 0 15px rgba(0, 230, 118, 0.3); transform: translateY(-2px); }
+        .pc-item.busy { border-color: #f44336; background: rgba(244, 67, 54, 0.1); opacity: 0.9; }
+        .pc-item.vip { border-color: #ffeb3b; }
+        .pc-item.bootcamp { border-color: #9c27b0; }
+        .pc-item.vip-room { border-color: #00bcd4; }
+        .pc-item.duo-trio { border-color: #ff9800; }
+        
+        /* Selection for Booking */
+        .pc-item.selected-for-booking { border-color: #e040fb !important; background: rgba(224, 64, 251, 0.3) !important; box-shadow: 0 0 15px rgba(224, 64, 251, 0.5); transform: scale(1.05); z-index: 2; }
+        
+        /* Booking States */
+        .pc-item.booking-soon { border-color: #ffeb3b; animation: pulse-yellow 2s infinite; }
+        .pc-item.booking-late { border-color: #f44336; animation: pulse-red 1s infinite; background: rgba(244, 67, 54, 0.3); }
+        @keyframes pulse-yellow { 0% { box-shadow: 0 0 0 0 rgba(255, 235, 59, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 235, 59, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 235, 59, 0); } }
+        @keyframes pulse-red { 0% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(244, 67, 54, 0); } 100% { box-shadow: 0 0 0 0 rgba(244, 67, 54, 0); } }
+
+        .pc-number { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 5px; }
+        .pc-status { font-size: 11px; color: #b388ff; text-transform: uppercase; }
+        .pc-item.free .pc-status { color: #00e676; }
+        .pc-item.busy .pc-status { color: #f44336; }
+        .pc-icons { display: flex; justify-content: center; gap: 5px; margin-top: 5px; font-size: 12px; }
+
+        /* --- GEAR VOLUME CONTROLS --- */
+        .gear-panel { background: rgba(10, 10, 15, 0.8); border: 1px solid rgba(156, 39, 176, 0.3); border-radius: 12px; padding: 20px; margin-top: 20px; }
+        .volume-control { margin-bottom: 20px; }
+        .volume-label { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; color: #e040fb; font-weight: bold; }
+        .volume-track { height: 12px; background: rgba(255, 255, 255, 0.1); border-radius: 6px; overflow: hidden; position: relative; cursor: pointer; }
+        .volume-fill { height: 100%; background: linear-gradient(90deg, #9c27b0, #e040fb); width: 0%; transition: width 0.3s ease; border-radius: 6px; box-shadow: 0 0 10px rgba(224, 64, 251, 0.5); }
+        .volume-markers { display: flex; justify-content: space-between; margin-top: 5px; font-size: 10px; color: #7c4dff; }
+
+        /* --- MODALS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(5px); z-index: 10000; display: none; justify-content: center; align-items: center; }
+        .modal-overlay.active { display: flex; animation: fadeIn 0.3s; }
+        .modal { background: #1a1a2e; border: 2px solid #9c27b0; border-radius: 15px; padding: 30px; width: 90%; max-width: 500px; box-shadow: 0 0 50px rgba(156, 39, 176, 0.5); position: relative; max-height: 90vh; overflow-y: auto; }
+        .modal h3 { color: #e040fb; margin-bottom: 20px; font-size: 24px; text-align: center; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #b388ff; font-size: 24px; cursor: pointer; width: auto; padding: 0; box-shadow: none; }
+        .modal-close:hover { color: #fff; }
+        
+        .action-buttons { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
+        .action-btn { padding: 20px; font-size: 18px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .action-btn.gear { background: linear-gradient(135deg, #00bcd4 0%, #0097a7 100%); box-shadow: 0 4px 15px rgba(0, 188, 212, 0.4); }
+        .action-btn.gear:hover { background: linear-gradient(135deg, #26c6da 0%, #00acc1 100%); }
+        .action-btn.finish { background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%); box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4); }
+        .action-btn.finish:hover { background: linear-gradient(135deg, #66bb6a 0%, #43a047 100%); }
+        
+        .gear-option { display: flex; align-items: center; gap: 15px; padding: 15px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(156, 39, 176, 0.3); border-radius: 8px; margin-bottom: 10px; cursor: pointer; transition: all 0.2s; flex-direction: column; align-items: flex-start; }
+        .gear-option:hover { background: rgba(156, 39, 176, 0.2); border-color: #e040fb; }
+        .gear-header { display: flex; align-items: center; gap: 10px; width: 100%; }
+        .gear-icon { font-size: 24px; }
+        .gear-info { flex: 1; }
+        .gear-name { font-weight: bold; color: #fff; }
+        .gear-id { font-size: 12px; color: #b388ff; }
+        .gear-actions { margin-top: 10px; width: 100%; display: flex; gap: 10px; }
+        .gear-actions button { font-size: 12px; padding: 8px; }
+
+        /* --- STATS & LEGEND --- */
+        .stats { display: flex; gap: 15px; margin-top: 20px; flex-wrap: wrap; }
+        .stat-card { flex: 1; min-width: 150px; background: rgba(156, 39, 176, 0.1); border: 1px solid rgba(156, 39, 176, 0.3); border-radius: 10px; padding: 15px; text-align: center; }
+        .stat-value { font-size: 32px; font-weight: bold; color: #e040fb; }
+        .stat-label { font-size: 12px; color: #b388ff; margin-top: 5px; text-transform: uppercase; }
+        .legend { display: flex; gap: 20px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b388ff; }
+        .legend-color { width: 20px; height: 20px; border-radius: 4px; border: 2px solid; }
+        .legend-color.free { background: rgba(0, 230, 118, 0.2); border-color: #00e676; }
+        .legend-color.busy { background: rgba(244, 67, 54, 0.2); border-color: #f44336; }
+        .legend-color.booking { background: rgba(255, 235, 59, 0.2); border-color: #ffeb3b; }
+        .legend-color.selected { background: rgba(224, 64, 251, 0.2); border-color: #e040fb; }
+
+        /* --- CALCULATOR RESULTS --- */
+        .result-area { margin-top: 30px; }
+        .result-card { background: linear-gradient(135deg, rgba(156, 39, 176, 0.2) 0%, rgba(123, 31, 162, 0.1) 100%); border: 2px solid #ffeb3b; border-radius: 15px; padding: 25px; box-shadow: 0 0 40px rgba(255, 235, 59, 0.4); animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .result-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid rgba(255, 235, 59, 0.5); flex-wrap: wrap; gap: 10px; }
+        .result-title { font-size: 22px; font-weight: bold; color: #ffeb3b; text-shadow: 0 0 15px rgba(255, 235, 59, 0.5); }
+        .result-price { font-size: 42px; font-weight: bold; color: #ffeb3b; text-shadow: 0 0 20px rgba(255, 235, 59, 0.6); }
+        .badge-best { background: #ffeb3b; color: #000; padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; margin-left: 10px; display: inline-block; }
+        .breakdown { background: rgba(10, 10, 15, 0.6); padding: 15px; border-radius: 8px; font-size: 15px; line-height: 2; color: #ccc; }
+        .breakdown b { color: #fff; }
+        .breakdown .highlight { color: #e040fb; font-weight: bold; }
+        .no-result { text-align: center; color: #f44336; font-size: 18px; padding: 30px; background: rgba(244, 67, 54, 0.1); border-radius: 10px; border: 1px solid rgba(244, 67, 54, 0.3); }
+        
+        .connection-status { position: absolute; top: 10px; right: 10px; font-size: 10px; padding: 4px 8px; border-radius: 4px; background: rgba(0,0,0,0.5); z-index: 10; }
+        .status-online { color: #00e676; border: 1px solid #00e676; }
+        .status-offline { color: #f44336; border: 1px solid #f44336; }
+        .sound-toggle { position: absolute; top: 10px; left: 10px; font-size: 20px; cursor: pointer; z-index: 10; background: rgba(0,0,0,0.5); padding: 5px 10px; border-radius: 4px; border: 1px solid #9c27b0; }
+
+        /* Date Picker Custom */
+        .date-selector { display: flex; gap: 10px; margin-bottom: 15px; }
+        .date-btn { flex: 1; padding: 15px; text-align: center; border: 2px solid rgba(156, 39, 176, 0.3); border-radius: 10px; cursor: pointer; transition: all 0.3s; background: rgba(10, 10, 15, 0.6); }
+        .date-btn.active { background: rgba(156, 39, 176, 0.3); border-color: #e040fb; box-shadow: 0 0 15px rgba(224, 64, 251, 0.3); }
+        .date-btn .day-num { font-size: 24px; font-weight: bold; color: #fff; display: block; }
+        .date-btn .day-name { font-size: 12px; color: #b388ff; text-transform: uppercase; }
+        
+        /* Shift Timer Display - Bottom Left Corner */
+        .shift-timer { 
+            position: fixed; 
+            bottom: 20px; 
+            left: 20px; 
+            background: rgba(10, 10, 15, 0.95); 
+            border: 2px solid rgba(255, 235, 59, 0.5); 
+            border-radius: 12px; 
+            padding: 15px 20px; 
+            z-index: 1000; 
+            box-shadow: 0 0 20px rgba(255, 235, 59, 0.3); 
+            min-width: 200px;
+            backdrop-filter: blur(10px);
+        }
+        .shift-timer .shift-label { 
+            font-size: 12px; 
+            color: #b388ff; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+        .shift-timer .shift-time { 
+            font-size: 28px; 
+            font-weight: bold; 
+            color: #ffeb3b; 
+            text-shadow: 0 0 10px rgba(255, 235, 59, 0.5); 
+            font-variant-numeric: tabular-nums;
+        }
+        .shift-timer .shift-end { 
+            font-size: 11px; 
+            color: #7c4dff; 
+            margin-top: 5px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Visual Effects -->
+<div class="scanline-overlay" id="scanline"></div>
+<div class="sound-toggle" id="soundToggle" onclick="toggleSound()">🔇</div>
+
+<!-- Shift Timer Display -->
+<div class="shift-timer" id="shiftTimer">
+    <div class="shift-label">До конца смены</div>
+    <div class="shift-time" id="shiftTimeRemaining">--:--:--</div>
+    <div class="shift-end" id="shiftEndTime">Смена: 08:30 - 20:00</div>
+</div>
+
+<div class="container">
+    <div id="connStatus" class="connection-status status-offline">Connecting...</div>
+    
+    <h2>X-Arena</h2>
+    <div class="subtitle">Ultimate Management System</div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab('calculator', this)">Калькулятор</div>
+        <div class="tab" onclick="switchTab('computers', this)">💻 Компьютеры</div>
+        <div class="tab" onclick="switchTab('bookings', this)">📅 Бронь</div>
+    </div>
+
+    <!-- Calculator Tab -->
+    <div id="calculator" class="tab-content active">
+        <div class="time-display">
+            <div class="time" id="displayTime">--:--</div>
+            <div class="day" id="displayDay">--</div>
+        </div>
+        <div class="control-group">
+            <label>Зона</label>
+            <select id="zone">
+                <option value="0">VIP</option>
+                <option value="1">BOOTCAMP</option>
+                <option value="2">Standard (2/3)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>Сколько часов хочет клиент?</label>
+            <input type="number" id="hoursInput" min="1" max="24" step="0.5" value="5" placeholder="Например: 5">
+        </div>
+        <button onclick="calculate()">Рассчитать лучший вариант</button>
+        <div id="results" class="result-area"></div>
+    </div>
+
+    <!-- Computers Tab -->
+    <div id="computers" class="tab-content">
+        <div class="zone-selector">
+            <label>Выберите зону:</label>
+            <select id="pcZone" onchange="renderPCs()">
+                <option value="all">Все компьютеры</option>
+                <option value="vip-open">VIP Open (1-18)</option>
+                <option value="bootcamp">Bootcamp (19-29)</option>
+                <option value="vip-room">VIP Room (30-38)</option>
+                <option value="duo-trio">Duo/Trio (39-43)</option>
+            </select>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card"><div class="stat-value" id="totalCount">43</div><div class="stat-label">Всего ПК</div></div>
+            <div class="stat-card"><div class="stat-value" id="freeCount">43</div><div class="stat-label" style="color: #00e676">Свободно</div></div>
+            <div class="stat-card"><div class="stat-value" id="busyCount">0</div><div class="stat-label" style="color: #f44336">Занято</div></div>
+        </div>
+
+        <div id="pcGrid" class="pc-grid"></div>
+
+        <!-- Gear Volume Panel -->
+        <div class="gear-panel">
+            <label style="margin-bottom: 15px; display: block;"> Выдано оборудования (Объем)</label>
+            
+            <div class="volume-control">
+                <div class="volume-label"><span>Logitech G102</span><span id="vol-g102-text">0/5</span></div>
+                <div class="volume-track"><div class="volume-fill" id="vol-g102"></div></div>
+                <div class="volume-markers"><span>0</span><span>2</span><span>4</span><span>5</span></div>
+            </div>
+
+            <div class="volume-control">
+                <div class="volume-label"><span>Razer Viper</span><span id="vol-viper-text">0/5</span></div>
+                <div class="volume-track"><div class="volume-fill" id="vol-viper" style="background: linear-gradient(90deg, #00e676, #69f0ae);"></div></div>
+                <div class="volume-markers"><span>0</span><span>2</span><span>4</span><span>5</span></div>
+            </div>
+
+            <div class="volume-control">
+                <div class="volume-label"><span>SteelSeries Rival 3</span><span id="vol-rival3-text">0/5</span></div>
+                <div class="volume-track"><div class="volume-fill" id="vol-rival3" style="background: linear-gradient(90deg, #ff9800, #ffb74d);"></div></div>
+                <div class="volume-markers"><span>0</span><span>2</span><span>4</span><span>5</span></div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-color free"></div><span>Свободен</span></div>
+            <div class="legend-item"><div class="legend-color busy"></div><span>Занят</span></div>
+            <div class="legend-item"><div class="legend-color booking"></div><span>Бронь</span></div>
+            <div class="legend-item"><div class="legend-color selected"></div><span>Выбран для брони</span></div>
+        </div>
+    </div>
+
+    <!-- Bookings Tab -->
+    <div id="bookings" class="tab-content">
+        <div class="control-group">
+            <label>Выберите ПК для брони (можно несколько):</label>
+            <div id="bookingPcGrid" class="pc-grid" style="margin-top: 10px; max-height: 300px; overflow-y: auto;"></div>
+            <p style="font-size: 12px; color: #7c4dff; margin-top: 5px;">💡 Кликните на ПК, чтобы добавить/убрать из брони</p>
+        </div>
+
+        <div class="control-group">
+            <label>Дата начала:</label>
+            <div class="date-selector">
+                <div class="date-btn active" id="dateToday" onclick="setBookingDate(0)">
+                    <span class="day-num" id="todayNum">--</span>
+                    <span class="day-name">Сегодня</span>
+                </div>
+                <div class="date-btn" id="dateTomorrow" onclick="setBookingDate(1)">
+                    <span class="day-num" id="tomorrowNum">--</span>
+                    <span class="day-name">Завтра</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Время начала:</label>
+            <input type="time" id="bookingTime" value="20:00">
+        </div>
+
+        <div class="control-group">
+            <label>Длительность (часов):</label>
+            <input type="number" id="bookingDuration" min="1" max="12" value="2">
+        </div>
+        <div class="control-group">
+            <label>Имя клиента / Телефон:</label>
+            <input type="text" id="bookingClient" placeholder="Иван +7999...">
+        </div>
+        <button onclick="createBooking()">Забронировать</button>
+        
+        <div id="activeBookings" style="margin-top: 30px;"></div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div class="modal-overlay" id="pcActionModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('pcActionModal')">×</button>
+        <h3>🖥️ ПК №<span id="actionModalPcNum">--</span></h3>
+        <p style="text-align:center; color:#b388ff; margin-bottom:20px;">Что хотите сделать?</p>
+        
+        <div class="action-buttons">
+            <button class="action-btn gear" onclick="openGearManagement()">🎧 Выдать оборудование</button>
+            <button class="action-btn finish" onclick="finishSession()">✅ Завершить сеанс</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="gearModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('gearModal')">×</button>
+        <h3>🎧 Управление оборудованием</h3>
+        <p style="text-align:center; color:#b388ff; margin-bottom:20px;" id="gearModalPcInfo">ПК №--</p>
+        <div id="gearListContainer"></div>
+        <button class="secondary" onclick="closeModal('gearModal')" style="margin-top: 20px;">Закрыть</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="returnModal">
+    <div class="modal">
+        <button class="modal-close" onclick="closeModal('returnModal')">×</button>
+        <h3>⚠️ Возврат оборудования</h3>
+        <p style="text-align:center; color:#ffeb3b; margin-bottom:20px;" id="returnModalText">Не забудьте забрать:</p>
+        <div id="returnGearList" style="background:rgba(0,0,0,0.3); padding:15px; border-radius:8px; margin-bottom:20px;"></div>
+        <button class="danger" onclick="confirmReturn()">✅ Оборудование возвращено</button>
+    </div>
+</div>
+
+<script type="module">
+    // --- FIREBASE SETUP ---
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCc2yrM0jEbN1241C4CrbRWtA1FQHy1qZk",
+      authDomain: "xadmin-40273.firebaseapp.com",
+      databaseURL: "https://xadmin-40273-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "xadmin-40273",
+      storageBucket: "xadmin-40273.firebasestorage.app",
+      messagingSenderId: "25092798342",
+      appId: "1:25092798342:web:9c50224dd1627c017e1e07",
+      measurementId: "G-CL45PJ34Q5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Global State
+    window.pcStatus = {};
+    window.pcGear = {}; 
+    window.bookings = [];
+    window.soundEnabled = false;
+    window.currentActionPc = null; // For action modal
+    window.currentGearPc = null;   // For gear modal
+    window.selectedBookingPcs = new Set();
+    window.bookingDateOffset = 0;
+
+    for (let i = 1; i <= 43; i++) {
+        window.pcStatus[i] = 0;
+        window.pcGear[i] = [];
+    }
+
+    // Audio Context
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playSound(type) {
+        if (!window.soundEnabled) return;
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        if (type === 'booking-soon') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1046.5, audioCtx.currentTime + 0.1);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+        } else if (type === 'booking-late') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            osc.frequency.linearRampToValueAtTime(110, audioCtx.currentTime + 0.3);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                const gain2 = audioCtx.createGain();
+                osc2.connect(gain2); gain2.connect(audioCtx.destination);
+                osc2.type = 'square'; osc2.frequency.setValueAtTime(220, audioCtx.currentTime);
+                gain2.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain2.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc2.start(); osc2.stop(audioCtx.currentTime + 0.3);
+            }, 400);
+        } else if (type === 'click') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+    }
+
+    window.toggleSound = function() {
+        window.soundEnabled = !window.soundEnabled;
+        document.getElementById('soundToggle').textContent = window.soundEnabled ? '🔊' : '🔇';
+        if (window.soundEnabled && audioCtx.state === 'suspended') audioCtx.resume();
+        playSound('click');
+    };
+
+    // --- REALTIME LISTENERS ---
+    onValue(ref(db, 'pcs'), (snapshot) => {
+        const data = snapshot.val();
+        const statusEl = document.getElementById('connStatus');
+        if (data) {
+            for (let i = 1; i <= 43; i++) window.pcStatus[i] = data[i] !== undefined ? data[i] : 0;
+            renderPCs();
+            renderBookingGrid();
+            statusEl.textContent = "ONLINE • SYNCED";
+            statusEl.className = "connection-status status-online";
+        } else {
+            statusEl.textContent = "ONLINE • EMPTY DB";
+            statusEl.className = "connection-status status-online";
+        }
+    });
+
+    onValue(ref(db, 'gear'), (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            window.pcGear = data;
+            updateGearVolumes();
+            renderPCs();
+        }
+    });
+
+    onValue(ref(db, 'bookings'), (snapshot) => {
+        const data = snapshot.val();
+        window.bookings = data ? Object.entries(data).map(([id, val]) => ({id, ...val})) : [];
+        renderBookings();
+        checkBookingAlerts();
+        renderPCs();
+        renderBookingGrid();
+    });
+
+    // --- UI FUNCTIONS ---
+    window.switchTab = function(tabName, element) {
+        playSound('click');
+        element.classList.add('glitch');
+        setTimeout(() => element.classList.remove('glitch'), 400);
+        const scanline = document.getElementById('scanline');
+        scanline.classList.remove('active'); void scanline.offsetWidth; scanline.classList.add('active');
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+        const content = document.getElementById(tabName);
+        content.classList.add('active');
+        content.classList.add('content-glitch');
+        setTimeout(() => content.classList.remove('content-glitch'), 300);
+    };
+
+    window.renderPCs = function() {
+        const zone = document.getElementById('pcZone').value;
+        const grid = document.getElementById('pcGrid');
+        grid.innerHTML = '';
+        let startPc = 1, endPc = 43;
+        if (zone === 'vip-open') { startPc = 1; endPc = 18; }
+        else if (zone === 'bootcamp') { startPc = 19; endPc = 29; }
+        else if (zone === 'vip-room') { startPc = 30; endPc = 38; }
+        else if (zone === 'duo-trio') { startPc = 39; endPc = 43; }
+
+        let free = 0, busy = 0;
+        const now = Date.now();
+
+        for (let i = startPc; i <= endPc; i++) {
+            const status = window.pcStatus[i] || 0;
+            const gear = window.pcGear[i] || [];
+            
+            let bookingClass = '';
+            let bookingIcon = '';
+            window.bookings.forEach(b => {
+                if (b.pcs && b.pcs.includes(i)) {
+                    const startTime = new Date(b.start).getTime();
+                    const endTime = startTime + (b.duration * 3600000);
+                    if (now >= startTime - 900000 && now < startTime) bookingClass = 'booking-soon';
+                    else if (now >= startTime && now < endTime && status === 0) bookingClass = 'booking-late';
+                    if (bookingClass) bookingIcon = '🔒';
+                }
+            });
+
+            const pc = document.createElement('div');
+            pc.className = `pc-item ${status === 0 ? 'free' : 'busy'} ${bookingClass}`;
+            if (i <= 18) pc.classList.add('vip');
+            else if (i <= 29) pc.classList.add('bootcamp');
+            else if (i <= 38) pc.classList.add('vip-room');
+            else pc.classList.add('duo-trio');
+            
+            let iconsHtml = gear.map(g => {
+                if (g.type === 'g102') return '🖱️';
+                if (g.type === 'viper') return '🐍';
+                if (g.type === 'rival3') return '🛡️';
+                return '';
+            }).join(' ');
+
+            pc.innerHTML = `
+                <div class="pc-number">${i} ${bookingIcon}</div>
+                <div class="pc-status">${status === 0 ? 'свободен' : 'занят'}</div>
+                <div class="pc-icons">${iconsHtml}</div>
+            `;
+            
+            pc.onclick = () => handlePcClick(i, status);
+            grid.appendChild(pc);
+            if (status === 0) free++; else busy++;
+        }
+        document.getElementById('freeCount').textContent = free;
+        document.getElementById('busyCount').textContent = busy;
+        document.getElementById('totalCount').textContent = endPc - startPc + 1;
+    };
+
+    // FIXED: Click logic with Action Modal for Busy PCs
+    function handlePcClick(pcNum, status) {
+        playSound('click');
+        
+        // If BUSY -> Show Action Modal (Gear OR Finish)
+        if (status === 1) {
+            window.currentActionPc = pcNum;
+            document.getElementById('actionModalPcNum').textContent = pcNum;
+            document.getElementById('pcActionModal').classList.add('active');
+        } 
+        // If FREE -> Toggle Status immediately
+        else {
+            const newStatus = status === 0 ? 1 : 0;
+            set(ref(db, 'pcs/' + pcNum), newStatus);
+            
+            // If freeing up PC, check for gear return
+            if (newStatus === 0 && window.pcGear[pcNum] && window.pcGear[pcNum].length > 0) {
+                showReturnModal(pcNum);
+            }
+        }
+    }
+
+    // Action Modal Functions
+    window.openGearManagement = function() {
+        closeModal('pcActionModal');
+        window.currentGearPc = window.currentActionPc;
+        openGearModal(window.currentGearPc);
+    };
+
+    window.finishSession = function() {
+        const pcNum = window.currentActionPc;
+        closeModal('pcActionModal');
+        
+        // Free the PC
+        set(ref(db, 'pcs/' + pcNum), 0);
+        
+        // Check if gear needs returning
+        if (window.pcGear[pcNum] && window.pcGear[pcNum].length > 0) {
+            showReturnModal(pcNum);
+        }
+        playSound('click');
+    };
+
+    // --- GEAR SYSTEM ---
+    function openGearModal(pcNum) {
+        document.getElementById('gearModalPcInfo').textContent = `ПК №${pcNum} (ЗАНЯТ)`;
+        const container = document.getElementById('gearListContainer');
+        container.innerHTML = '';
+
+        const types = [
+            { id: 'g102', name: 'Logitech G102', icon: '🖱️' },
+            { id: 'viper', name: 'Razer Viper', icon: '🐍' },
+            { id: 'rival3', name: 'SteelSeries Rival 3', icon: '️' }
+        ];
+
+        types.forEach(type => {
+            const currentGear = window.pcGear[pcNum] || [];
+            const existingItem = currentGear.find(g => g.type === type.id);
+            
+            const div = document.createElement('div');
+            div.className = 'gear-option';
+            
+            let actionHtml = '';
+            if (existingItem) {
+                actionHtml = `<button class="danger" onclick="removeGear(${pcNum}, '${type.id}', '${existingItem.id}')">🔄 Забрать ${existingItem.id}</button>`;
+            } else {
+                actionHtml = `<button class="secondary" onclick="issueGear(${pcNum}, '${type.id}')">➕ Выдать</button>`;
+            }
+
+            div.innerHTML = `
+                <div class="gear-header">
+                    <div class="gear-icon">${type.icon}</div>
+                    <div class="gear-info">
+                        <div class="gear-name">${type.name}</div>
+                        <div class="gear-id">${existingItem ? existingItem.id : 'Свободно на складе'}</div>
+                    </div>
+                </div>
+                <div class="gear-actions">${actionHtml}</div>
+            `;
+            container.appendChild(div);
+        });
+
+        document.getElementById('gearModal').classList.add('active');
+    }
+
+    window.issueGear = function(pcNum, type) {
+        const currentGear = window.pcGear[pcNum] || [];
+        const existingIds = currentGear.filter(g => g.type === type).map(g => parseInt(g.id.split('-')[1]));
+        let nextId = 1;
+        while (existingIds.includes(nextId)) nextId++;
+        
+        const newGear = { type: type, id: `${type.toUpperCase()}-${String(nextId).padStart(2, '0')}` };
+        
+        if (!window.pcGear[pcNum]) window.pcGear[pcNum] = [];
+        window.pcGear[pcNum].push(newGear);
+        set(ref(db, 'gear'), window.pcGear);
+        
+        playSound('click');
+        openGearModal(pcNum);
+    };
+
+    window.removeGear = function(pcNum, type, gearId) {
+        if (!window.pcGear[pcNum]) return;
+        window.pcGear[pcNum] = window.pcGear[pcNum].filter(g => !(g.type === type && g.id === gearId));
+        set(ref(db, 'gear'), window.pcGear);
+        playSound('click');
+        openGearModal(pcNum);
+    };
+
+    function showReturnModal(pcNum) {
+        const gear = window.pcGear[pcNum];
+        if (!gear || gear.length === 0) return;
+        
+        let html = '<ul style="list-style:none; padding:0;">';
+        gear.forEach(g => {
+            let name = g.type === 'g102' ? 'Logitech G102' : g.type === 'viper' ? 'Razer Viper' : 'SteelSeries Rival 3';
+            html += `<li style="padding:5px 0; border-bottom:1px solid rgba(255,255,255,0.1);"> ${name} (${g.id})</li>`;
+        });
+        html += '</ul>';
+        
+        document.getElementById('returnModalText').innerHTML = `ПК №${pcNum}: Не забудьте забрать:`;
+        document.getElementById('returnGearList').innerHTML = html;
+        document.getElementById('returnModal').dataset.pc = pcNum;
+        document.getElementById('returnModal').classList.add('active');
+        playSound('booking-late');
+    }
+
+    window.confirmReturn = function() {
+        const pcNum = parseInt(document.getElementById('returnModal').dataset.pc);
+        delete window.pcGear[pcNum];
+        set(ref(db, 'gear'), window.pcGear);
+        closeModal('returnModal');
+        playSound('click');
+    };
+
+    function updateGearVolumes() {
+        const counts = { g102: 0, viper: 0, rival3: 0 };
+        Object.values(window.pcGear).forEach(gearList => {
+            gearList.forEach(g => { if (counts[g.type] !== undefined) counts[g.type]++; });
+        });
+        
+        ['g102', 'viper', 'rival3'].forEach(type => {
+            const pct = (counts[type] / 5) * 100;
+            document.getElementById(`vol-${type}`).style.width = `${pct}%`;
+            document.getElementById(`vol-${type}-text`).textContent = `${counts[type]}/5`;
+        });
+    }
+
+    // --- BOOKING SYSTEM ---
+    function initDateButtons() {
+        const today = new Date();
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        
+        document.getElementById('todayNum').textContent = today.getDate();
+        document.getElementById('tomorrowNum').textContent = tomorrow.getDate();
+    }
+    initDateButtons();
+
+    window.setBookingDate = function(offset) {
+        window.bookingDateOffset = offset;
+        document.getElementById('dateToday').classList.toggle('active', offset === 0);
+        document.getElementById('dateTomorrow').classList.toggle('active', offset === 1);
+        playSound('click');
+    };
+
+    function renderBookingGrid() {
+        const grid = document.getElementById('bookingPcGrid');
+        grid.innerHTML = '';
+        
+        for (let i = 1; i <= 43; i++) {
+            const pc = document.createElement('div');
+            const isSelected = window.selectedBookingPcs.has(i);
+            const status = window.pcStatus[i] || 0;
+            
+            pc.className = `pc-item ${status === 0 ? 'free' : 'busy'} ${isSelected ? 'selected-for-booking' : ''}`;
+            if (i <= 18) pc.classList.add('vip');
+            else if (i <= 29) pc.classList.add('bootcamp');
+            else if (i <= 38) pc.classList.add('vip-room');
+            else pc.classList.add('duo-trio');
+            
+            pc.innerHTML = `<div class="pc-number">${i}</div>`;
+            pc.onclick = () => toggleBookingPc(i);
+            grid.appendChild(pc);
+        }
+    }
+
+    function toggleBookingPc(pcNum) {
+        playSound('click');
+        if (window.selectedBookingPcs.has(pcNum)) {
+            window.selectedBookingPcs.delete(pcNum);
+        } else {
+            window.selectedBookingPcs.add(pcNum);
+        }
+        renderBookingGrid();
+    }
+
+    window.createBooking = function() {
+        if (window.selectedBookingPcs.size === 0) { alert('Выберите хотя бы один ПК!'); return; }
+        
+        const timeStr = document.getElementById('bookingTime').value;
+        const duration = parseFloat(document.getElementById('bookingDuration').value);
+        const client = document.getElementById('bookingClient').value;
+        
+        if (!timeStr || !client) { alert('Заполните время и имя клиента!'); return; }
+        
+        const targetDate = new Date();
+        targetDate.setDate(targetDate.getDate() + window.bookingDateOffset);
+        const [hours, minutes] = timeStr.split(':');
+        targetDate.setHours(parseInt(hours), parseInt(minutes), 0, 0);
+        
+        const pcsArray = Array.from(window.selectedBookingPcs).sort((a,b) => a-b);
+        
+        const id = Date.now().toString();
+        set(ref(db, `bookings/${id}`), { 
+            pcs: pcsArray, 
+            start: targetDate.toISOString(), 
+            duration, 
+            client, 
+            created: Date.now() 
+        });
+        
+        window.selectedBookingPcs.clear();
+        document.getElementById('bookingClient').value = '';
+        renderBookingGrid();
+        playSound('click');
+        alert(`Бронь создана на ПК: ${pcsArray.join(', ')}!`);
+    };
+
+    function renderBookings() {
+        const container = document.getElementById('activeBookings');
+        if (window.bookings.length === 0) {
+            container.innerHTML = '<p style="text-align:center; color:#7c4dff;">Нет активных броней</p>';
+            return;
+        }
+        
+        let html = '<div style="display:flex; flex-direction:column; gap:10px;">';
+        window.bookings.sort((a,b) => new Date(a.start) - new Date(b.start)).forEach(b => {
+            const startDate = new Date(b.start);
+            const isPast = Date.now() > startDate.getTime() + (b.duration * 3600000);
+            const color = isPast ? '#f44336' : '#ffeb3b';
+            const pcsDisplay = b.pcs ? b.pcs.join(', ') : b.pc;
+            
+            html += `
+            <div style="background:rgba(0,0,0,0.3); padding:15px; border-radius:8px; border-left:4px solid ${color}; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:bold; color:#fff;">ПК №${pcsDisplay} • ${b.client}</div>
+                    <div style="font-size:12px; color:#b388ff;">${startDate.toLocaleString()} (${b.duration}ч)</div>
+                </div>
+                <button class="secondary danger" style="width:auto; padding:8px 15px; margin:0;" onclick="cancelBooking('${b.id}')">Отмена</button>
+            </div>`;
+        });
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    window.cancelBooking = function(id) {
+        playSound('click');
+        remove(ref(db, `bookings/${id}`));
+    };
+
+    function checkBookingAlerts() {
+        const now = Date.now();
+        window.bookings.forEach(b => {
+            if (!b.start) return;
+            const startTime = new Date(b.start).getTime();
+            const key = `alerted-${b.id}`;
+            
+            if (now >= startTime - 900000 && now < startTime && !localStorage.getItem(`${key}-soon`)) {
+                playSound('booking-soon');
+                localStorage.setItem(`${key}-soon`, 'true');
+            }
+            
+            const anyPcActive = b.pcs ? b.pcs.some(pc => window.pcStatus[pc] === 1) : window.pcStatus[b.pc] === 1;
+            if (now >= startTime + 900000 && !anyPcActive && !localStorage.getItem(`${key}-late`)) {
+                playSound('booking-late');
+                localStorage.setItem(`${key}-late`, 'true');
+            }
+        });
+    }
+
+    // --- CALCULATOR LOGIC ---
+    const packages = [
+        { name: "1ч День", h: 1, pWd: [175, 200, 250], pWe: [200, 225, 275], buyS: 0, buyE: 24, actS: 8, actE: 18 },
+        { name: "3ч День", h: 3, pWd: [445, 510, 640], pWe: [510, 575, 700], buyS: 8, buyE: 15, actS: 8, actE: 18 },
+        { name: "4ч День", h: 4, pWd: [560, 640, 800], pWe: [640, 720, 880], buyS: 8, buyE: 14, actS: 8, actE: 18 },
+        { name: "5ч День", h: 5, pWd: [655, 750, 940], pWe: [750, 845, 1030], buyS: 8, buyE: 13, actS: 8, actE: 18 },
+        { name: "1ч Вечер", h: 1, pWd: [200, 225, 275], pWe: [225, 250, 300], buyS: 0, buyE: 24, actS: 17, actE: 9.5 },
+        { name: "3ч Вечер", h: 3, pWd: [540, 610, 745], pWe: [610, 675, 810], buyS: 17, buyE: 6.5, actS: 17, actE: 9.5 },
+        { name: "4ч Вечер", h: 4, pWd: [680, 765, 935], pWe: [765, 850, 1020], buyS: 17, buyE: 5.5, actS: 17, actE: 9.5 },
+        { name: "5ч Вечер", h: 5, pWd: [800, 900, 1100], pWe: [900, 1000, 1200], buyS: 17, buyE: 4.5, actS: 17, actE: 9.5 },
+        { name: "10ч Ночь", h: 10, pWd: [1000, 1125, 1375], pWe: [1125, 1250, 1500], buyS: 20.5, buyE: 3, actS: 0, actE: 13 }
+    ];
+    const DEPOSIT_AMOUNT = 100;
+
+    function updateDisplay() {
+        const now = new Date();
+        document.getElementById('displayTime').textContent = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+        const days = ['Воскресенье', 'Понедельник', 'Вторник', 'Среда', 'Четверг', 'Пятница', 'Суббота'];
+        document.getElementById('displayDay').textContent = `${days[now.getDay()]} ${now.getDay()===0||now.getDay()===6?'(Выходной)':'(Будний)'}`;
+        
+        // Update shift timer (day shift 08:30 - 20:00)
+        updateShiftTimer(now);
+    }
+    
+    function updateShiftTimer(now) {
+        const shiftStartHour = 8;
+        const shiftStartMin = 30;
+        const shiftEndHour = 20;
+        const shiftEndMin = 0;
+        
+        const shiftStart = new Date(now);
+        shiftStart.setHours(shiftStartHour, shiftStartMin, 0, 0);
+        
+        const shiftEnd = new Date(now);
+        shiftEnd.setHours(shiftEndHour, shiftEndMin, 0, 0);
+        
+        // If current time is before shift start, show time until shift starts
+        // If current time is after shift end, show next day's shift
+        let targetTime;
+        let isBeforeShift = now < shiftStart;
+        let isAfterShift = now >= shiftEnd;
+        
+        if (isBeforeShift) {
+            // Before shift starts - show time until shift start
+            targetTime = shiftStart;
+            document.getElementById('shiftEndTime').textContent = `Смена начнётся в ${String(shiftStartHour).padStart(2,'0')}:${String(shiftStartMin).padStart(2,'0')}`;
+        } else if (isAfterShift) {
+            // After shift ends - show time until tomorrow's shift
+            targetTime = new Date(shiftStart);
+            targetTime.setDate(targetTime.getDate() + 1);
+            document.getElementById('shiftEndTime').textContent = `Смена: ${String(shiftStartHour).padStart(2,'0')}:${String(shiftStartMin).padStart(2,'0')} - ${String(shiftEndHour).padStart(2,'0')}:${String(shiftEndMin).padStart(2,'0')}`;
+        } else {
+            // During shift - show time remaining until shift end
+            targetTime = shiftEnd;
+            document.getElementById('shiftEndTime').textContent = `Смена: ${String(shiftStartHour).padStart(2,'0')}:${String(shiftStartMin).padStart(2,'0')} - ${String(shiftEndHour).padStart(2,'0')}:${String(shiftEndMin).padStart(2,'0')}`;
+        }
+        
+        const diffMs = targetTime - now;
+        const totalSeconds = Math.floor(diffMs / 1000);
+        
+        if (totalSeconds <= 0) {
+            document.getElementById('shiftTimeRemaining').textContent = '00:00:00';
+        } else {
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            document.getElementById('shiftTimeRemaining').textContent = 
+                `${String(hours).padStart(2,'0')}:${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+        }
+    }
+    
+    setInterval(updateDisplay, 1000); updateDisplay();
+
+    window.calculate = function() {
+        const zoneIdx = parseInt(document.getElementById('zone').value);
+        const hoursNeeded = parseFloat(document.getElementById('hoursInput').value);
+        const now = new Date();
+        const isWeekend = now.getDay() === 0 || now.getDay() === 6;
+        const startTime = now.getHours() + (now.getMinutes() / 60);
+        if (!hoursNeeded || hoursNeeded <= 0) { alert("Введите корректное количество часов!"); return; }
+        const bestOption = findBestOption(startTime, hoursNeeded, zoneIdx, isWeekend);
+        const resultsDiv = document.getElementById('results');
+        if (bestOption) {
+            resultsDiv.innerHTML = `<div class="result-card"><div class="result-header"><div class="result-title">${bestOption.title}<span class="badge-best">ЛУЧШИЙ</span></div><div class="result-price">${bestOption.price} ₽</div></div><div class="breakdown">${bestOption.desc}</div></div>`;
+        } else { resultsDiv.innerHTML = `<div class="no-result">Нет доступных вариантов</div>`; }
+    };
+
+    function findBestOption(startTime, hoursNeeded, zoneIdx, isWeekend) {
+        let bestOption = null, minPrice = Infinity;
+        for (let pkg of packages) {
+            if (Math.abs(pkg.h - hoursNeeded) < 0.01 && canBuyAtTime(pkg, startTime)) {
+                const price = isWeekend ? pkg.pWe[zoneIdx] : pkg.pWd[zoneIdx];
+                if (price < minPrice) { minPrice = price; bestOption = { title: `Пакет "${pkg.name}"`, price, desc: `Прямая продажа на ${hoursNeeded} часов` }; }
+            }
+        }
+        const combinations = generateCombinations(startTime, hoursNeeded, zoneIdx, isWeekend);
+        for (let combo of combinations) { if (combo.price < minPrice) { minPrice = combo.price; bestOption = combo; } }
+        const hourlyPrice = calcHourly(startTime, hoursNeeded, zoneIdx, isWeekend);
+        if (hourlyPrice < minPrice) { bestOption = { title: "Почасовая оплата", price: hourlyPrice, desc: `${hoursNeeded} часов по тарифу: ${hourlyPrice} ₽` }; }
+        return bestOption;
+    }
+
+    function generateCombinations(startTime, hoursNeeded, zoneIdx, isWeekend) {
+        let combinations = [];
+        for (let firstPkg of packages) {
+            if (firstPkg.h >= hoursNeeded || !canBuyAtTime(firstPkg, startTime)) continue;
+            const firstPrice = isWeekend ? firstPkg.pWe[zoneIdx] : firstPkg.pWd[zoneIdx];
+            const remainingHours = hoursNeeded - firstPkg.h;
+            const afterFirstTime = startTime + firstPkg.h;
+            const remainingOptions = findRemainingOptions(afterFirstTime, remainingHours, zoneIdx, isWeekend);
+            for (let remaining of remainingOptions) {
+                combinations.push({ title: `Пакет "${firstPkg.name}" + ${remaining.title}`, price: firstPrice + remaining.price, desc: `1. Пакет "<span class="highlight">${firstPkg.name}</span>": ${firstPrice} ₽<br>2. ${remaining.desc}<br><b>Итого: ${hoursNeeded} часов</b>` });
+            }
+        }
+        return combinations;
+    }
+
+    function findRemainingOptions(startTime, hoursNeeded, zoneIdx, isWeekend) {
+        let options = [];
+        if (hoursNeeded <= 0) return [];
+        if (hoursNeeded <= 0.5) return [{ title: 'Депозит', price: DEPOSIT_AMOUNT, desc: `Депозит ${DEPOSIT_AMOUNT} ₽ (30 мин)` }];
+        for (let pkg of packages) {
+            if (pkg.h > hoursNeeded || !canBuyAtTime(pkg, startTime)) continue;
+            const pkgPrice = isWeekend ? pkg.pWe[zoneIdx] : pkg.pWd[zoneIdx];
+            const remaining = hoursNeeded - pkg.h;
+            const afterPkgTime = startTime + pkg.h;
+            if (remaining <= 0.01) { options.push({ title: `Пакет "${pkg.name}"`, price: pkgPrice, desc: `Пакет "<span class="highlight">${pkg.name}</span>": ${pkgPrice} ₽` }); }
+            else { const subOptions = findRemainingOptions(afterPkgTime, remaining, zoneIdx, isWeekend); for (let sub of subOptions) { options.push({ title: `Пакет "${pkg.name}" + ${sub.title}`, price: pkgPrice + sub.price, desc: `Пакет "<span class="highlight">${pkg.name}</span>": ${pkgPrice} ₽<br>${sub.desc}` }); } }
+        }
+        const hourlyPrice = calcHourly(startTime, hoursNeeded, zoneIdx, isWeekend);
+        options.push({ title: `${hoursNeeded}ч по тарифу`, price: hourlyPrice, desc: `${hoursNeeded} часов по тарифу: ${hourlyPrice} ₽` });
+        if (hoursNeeded < 1) options.push({ title: 'Депозит', price: DEPOSIT_AMOUNT, desc: `Депозит ${DEPOSIT_AMOUNT} ₽ (30 мин)` });
+        return options;
+    }
+
+    function canBuyAtTime(pkg, time) {
+        let canBuy = false;
+        if (pkg.buyS > pkg.buyE) canBuy = (time >= pkg.buyS || time <= pkg.buyE);
+        else if (pkg.buyS === 0 && pkg.buyE === 24) canBuy = true;
+        else canBuy = (time >= pkg.buyS && time <= pkg.buyE);
+        if (!canBuy) return false;
+        const endTime = time + pkg.h;
+        if (pkg.actS < pkg.actE) return (time >= pkg.actS && endTime <= pkg.actE);
+        else { if (time >= pkg.actS) return true; if (time < pkg.actE && endTime <= pkg.actE + 24) return true; return false; }
+    }
+
+    function calcHourly(startTime, hours, zoneIdx, isWeekend) {
+        let total = 0, currentTime = startTime;
+        for (let i = 0; i < Math.ceil(hours); i++) {
+            let isDay = (currentTime >= 8 && currentTime < 17);
+            let rate = isDay ? (isWeekend ? packages[0].pWe[zoneIdx] : packages[0].pWd[zoneIdx]) : (isWeekend ? packages[4].pWe[zoneIdx] : packages[4].pWd[zoneIdx]);
+            total += rate; currentTime += 1; if (currentTime >= 24) currentTime -= 24;
+        }
+        return Math.round(total);
+    }
+
+    // Helpers
+    window.closeModal = function(id) { document.getElementById(id).classList.remove('active'); };
+    
+    // Background Stickers Animation
+    function createBackgroundStickers() {
+        const stickerCount = 15;
+        const body = document.body;
+        
+        for (let i = 0; i < stickerCount; i++) {
+            const sticker = document.createElement('div');
+            sticker.className = 'bg-sticker';
+            
+            // Random size between 30px and 80px
+            const size = Math.random() * 50 + 30;
+            sticker.style.width = size + 'px';
+            sticker.style.height = size + 'px';
+            
+            // Random position
+            sticker.style.left = Math.random() * 100 + 'vw';
+            sticker.style.top = Math.random() * 100 + 'vh';
+            
+            // Random rotation offset
+            const randomAngle = Math.random() * 360;
+            sticker.style.transform = `rotate(${randomAngle}deg)`;
+            
+            // Random animation duration between 20s and 40s
+            const duration = Math.random() * 20 + 20;
+            sticker.style.animationDuration = duration + 's';
+            
+            // Random delay
+            sticker.style.animationDelay = (Math.random() * -20) + 's';
+            
+            // Create SVG shape (abstract geometric shapes in dark purple tones)
+            const shapes = [
+                `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,10 90,90 10,90" fill="rgba(75,0,130,0.6)"/></svg>`,
+                `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect x="10" y="10" width="80" height="80" fill="rgba(106,13,173,0.6)" transform="rotate(45 50 50)"/></svg>`,
+                `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="50" r="40" fill="rgba(48,25,52,0.6)"/></svg>`,
+                `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><polygon points="50,5 61,35 95,35 68,57 79,91 50,70 21,91 32,57 5,35 39,35" fill="rgba(75,0,130,0.5)"/></svg>`
+            ];
+            
+            sticker.innerHTML = shapes[Math.floor(Math.random() * shapes.length)];
+            body.appendChild(sticker);
+        }
+    }
+    
+    // Initialize background stickers on load
+    createBackgroundStickers();
+    
+    // Init
+    renderPCs();
+    renderBookingGrid();
+    setInterval(checkBookingAlerts, 60000);
+</script>
+</body>
+</html>
